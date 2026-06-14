@@ -1,0 +1,5 @@
+.git
+dbview-bin
+*.log
+.env
+local

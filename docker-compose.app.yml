@@ -1,0 +1,19 @@
+name: oci-db-json-view
+
+services:
+  oci-db-json-view:
+    build:
+      context: .
+    container_name: oci-db-json-view
+    environment:
+      PORT: 6210
+      SECRETS_DIR: /secrets
+      # Access gate for the browser. Empty => OPEN (dev). Set in .env / deploy.sh.
+      DBVIEW_PASSWORD: ${DBVIEW_PASSWORD:-}
+      DBVIEW_COOKIE_SECRET: ${DBVIEW_COOKIE_SECRET:-}
+    # Reuses jira's materialized Oracle creds + wallet (same ADB), read-only.
+    volumes:
+      - ${HOST_SECRETS_DIR:-/run/emibs/jira}:/secrets:ro
+    ports:
+      - "127.0.0.1:6210:6210"
+    restart: unless-stopped

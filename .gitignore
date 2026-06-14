@@ -1,0 +1,4 @@
+dbview-bin
+*.log
+.env
+/local/
