@@ -2,3 +2,17 @@ dbview-bin
 *.log
 .env
 /local/
+
+# Python runtime/test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+cover/
