@@ -2,6 +2,8 @@ dbview-bin
 *.log
 .env
 /local/
+/ui/node_modules/
+/ui/dist/
 
 # Python runtime/test artifacts
 __pycache__/

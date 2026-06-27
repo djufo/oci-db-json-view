@@ -8,12 +8,13 @@ services:
     environment:
       PORT: 6210
       SECRETS_DIR: /secrets
+      DBVIEW_UI_DIR: /ui
       # Access gate for the browser. Empty => OPEN (dev). Set in .env / deploy.sh.
       DBVIEW_PASSWORD: ${DBVIEW_PASSWORD:-}
       DBVIEW_COOKIE_SECRET: ${DBVIEW_COOKIE_SECRET:-}
-    # Reuses jira's materialized Oracle creds + wallet (same ADB), read-only.
+    # Reuses Score's materialized Oracle creds + wallet, read-only.
     volumes:
-      - ${HOST_SECRETS_DIR:-/run/emibs/jira}:/secrets:ro
+      - ${HOST_SECRETS_DIR:-/run/emibs/score}:/secrets:ro
     ports:
       - "127.0.0.1:6210:6210"
     restart: unless-stopped
