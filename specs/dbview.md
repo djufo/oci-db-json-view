@@ -41,7 +41,9 @@ serve the built UI through the Go API with `DBVIEW_UI_DIR`.
 
 `rows` response: `{table, columns, rows:[[Cell|null,…]], total, page, size, order, dir}`.
 A `Cell` is `{v:string, bin?:bool}`; a SQL `NULL` is JSON `null` (no Cell). `bin`
-marks elided binary (BLOB/RAW) content. Text cells are capped at 1 MiB.
+marks elided binary (BLOB/RAW) content. Binary columns return a length marker,
+not raw bytes. LOB text columns return a bounded preview so table browsing never
+loads whole large values.
 
 Paging is deterministic: default `ORDER BY ROWID`; clicking a (non-LOB) column
 header sorts by it (`order`+`dir`), validated against the table's columns.

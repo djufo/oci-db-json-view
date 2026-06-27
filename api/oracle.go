@@ -210,16 +210,15 @@ func (d *DB) Rows(ctx context.Context, table, order, dir string, page, size int)
 		return nil, err
 	}
 	offset := (page - 1) * size
-	q := fmt.Sprintf(`SELECT * FROM "%s" ORDER BY %s %s OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`,
-		strings.ToUpper(table), orderSQL, dir)
+	q := fmt.Sprintf(`SELECT %s FROM "%s" ORDER BY %s %s OFFSET :1 ROWS FETCH NEXT :2 ROWS ONLY`,
+		selectList(cols), strings.ToUpper(table), orderSQL, dir)
 	rs, err := d.sql.QueryContext(ctx, q, offset, size)
 	if err != nil {
 		return nil, fmt.Errorf("rows: %w", err)
 	}
 	defer rs.Close()
 
-	colTypes, _ := rs.ColumnTypes()
-	n := len(colTypes)
+	n := len(cols)
 	var out [][]*Cell
 	for rs.Next() {
 		dest := make([]any, n)
@@ -232,7 +231,7 @@ func (d *DB) Rows(ctx context.Context, table, order, dir string, page, size int)
 		row := make([]*Cell, n)
 		for i := range dest {
 			raw := *(dest[i].(*any))
-			row[i] = formatCell(raw, colTypes[i].DatabaseTypeName())
+			row[i] = formatCell(raw, cols[i].Type)
 		}
 		out = append(out, row)
 	}
@@ -243,6 +242,22 @@ func (d *DB) Rows(ctx context.Context, table, order, dir string, page, size int)
 		Table: strings.ToUpper(table), Columns: cols, Rows: out, Total: total,
 		Page: page, Size: size, Order: resolvedOrder, Dir: dir,
 	}, nil
+}
+
+func selectList(cols []Column) string {
+	parts := make([]string, 0, len(cols))
+	for _, c := range cols {
+		quoted := fmt.Sprintf(`"%s"`, c.Name)
+		switch {
+		case isBinaryType(c.Type):
+			parts = append(parts, fmt.Sprintf(`CASE WHEN %s IS NULL THEN NULL ELSE '[binary ' || DBMS_LOB.GETLENGTH(%s) || ' bytes]' END AS "%s"`, quoted, quoted, c.Name))
+		case isLobType(c.Type):
+			parts = append(parts, fmt.Sprintf(`DBMS_LOB.SUBSTR(%s, 4000, 1) AS "%s"`, quoted, c.Name))
+		default:
+			parts = append(parts, quoted)
+		}
+	}
+	return strings.Join(parts, ", ")
 }
 
 func formatCell(raw any, dbType string) *Cell {
@@ -256,6 +271,9 @@ func formatCell(raw any, dbType string) *Cell {
 		}
 		return clip(string(v))
 	case string:
+		if isBinaryType(dbType) {
+			return &Cell{V: v, Bin: true}
+		}
 		return clip(v)
 	case time.Time:
 		return &Cell{V: v.Format(time.RFC3339)}

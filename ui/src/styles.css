@@ -130,6 +130,20 @@ select {
   min-height: 100vh;
 }
 
+.embedded-status {
+  position: fixed;
+  right: 0.75rem;
+  top: 0.75rem;
+  z-index: 10;
+  border: 1px solid #c4d5f4;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #174ea6;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.28rem 0.65rem;
+}
+
 .sidebar {
   min-height: 0;
   border-right: 1px solid var(--border);

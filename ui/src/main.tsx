@@ -242,6 +242,7 @@ function Shell({
           ) : null}
         </header>
       ) : null}
+      {embedded && status ? <div className="embedded-status">{status}</div> : null}
       <div className="layout">{children}</div>
     </div>
   );
