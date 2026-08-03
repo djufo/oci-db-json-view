@@ -1,5 +1,5 @@
 // Package dbview is an embeddable, read-only Oracle database browser. A host
-// service (jira, oci-srv-mgr, …) mounts it under any base path; it serves both
+// service (jira, srv-mgr, …) mounts it under any base path; it serves both
 // the introspection API (tables → columns → paginated rows) and an embedded web
 // UI with a collapsible JSON viewer for JSON columns. It only ever issues
 // SELECTs against the connected user's own schema.
