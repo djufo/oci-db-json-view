@@ -1,5 +1,5 @@
 #!/bin/sh
-# Load runtime DB secrets from SECRETS_DIR (the same tmpfs jira materializes:
+# Load runtime DB secrets from SECRETS_DIR (the same tmpfs Score materializes:
 # app.env + wallet/), then exec the app. Values may contain parens (the Oracle
 # connect descriptor) so they are read literally, never shell-sourced. DBVIEW_*
 # config comes from the container environment, not the secrets file.
@@ -9,7 +9,7 @@ SECRETS_DIR="${SECRETS_DIR:-/secrets}"
 if [ -f "$SECRETS_DIR/app.env" ]; then
   while IFS='=' read -r k v; do
     case "$k" in ''|\#*) continue ;; esac
-    case "$k" in ORA_*|TNS_ADMIN) export "$k=$v" ;; esac
+    case "$k" in ORA_*|TNS_ADMIN|DB_DRIVER|DB_TABLE) export "$k=$v" ;; esac
   done < "$SECRETS_DIR/app.env"
 fi
 [ -d "$SECRETS_DIR/wallet" ] && export ORA_WALLET="$SECRETS_DIR/wallet"

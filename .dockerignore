@@ -1,5 +1,7 @@
 .git
 dbview-bin
+ui/node_modules
+ui/dist
 *.log
 .env
 local

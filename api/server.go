@@ -19,13 +19,16 @@ type Server struct {
 	db       *DB
 	password string // when empty, auth is disabled (dev)
 	secret   []byte // cookie HMAC key
-	static   http.Handler
+	ui       fs.FS
 }
 
 const cookieName = "dbv_session"
 
 func NewServer(db *DB, password string, secret []byte, ui fs.FS) *Server {
-	return &Server{db: db, password: password, secret: secret, static: http.FileServer(http.FS(ui))}
+	if ui == nil {
+		ui = emptyFS{}
+	}
+	return &Server{db: db, password: password, secret: secret, ui: ui}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -37,8 +40,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/tables", s.requireAuth(s.tables))
 	mux.HandleFunc("GET /api/tables/{name}/columns", s.requireAuth(s.columns))
 	mux.HandleFunc("GET /api/tables/{name}/rows", s.requireAuth(s.rows))
-	// Everything else is the embedded UI (and lets the SPA-ish page load assets).
-	mux.Handle("/", s.static)
+	// Everything else is the UI app; unknown paths fall back to index.html.
+	mux.Handle("/", spaFileServer{s.ui})
 	return withSecurityHeaders(mux)
 }
 
@@ -179,4 +182,30 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 func writeErr(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
+}
+
+type spaFileServer struct {
+	fs fs.FS
+}
+
+func (s spaFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	if path == "/" {
+		path = "index.html"
+	} else {
+		path = path[1:]
+	}
+	if f, err := s.fs.Open(path); err == nil {
+		_ = f.Close()
+		http.FileServer(http.FS(s.fs)).ServeHTTP(w, r)
+		return
+	}
+	r.URL.Path = "/index.html"
+	http.FileServer(http.FS(s.fs)).ServeHTTP(w, r)
+}
+
+type emptyFS struct{}
+
+func (emptyFS) Open(string) (fs.File, error) {
+	return nil, fs.ErrNotExist
 }

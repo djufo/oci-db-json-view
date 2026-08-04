@@ -1,5 +1,5 @@
 // Package dbview is an embeddable, read-only Oracle database browser. A host
-// service (jira, oci-srv-mgr, …) mounts it under any base path; it serves both
+// service (jira, srv-mgr, …) mounts it under any base path; it serves both
 // the introspection API (tables → columns → paginated rows) and an embedded web
 // UI with a collapsible JSON viewer for JSON columns. It only ever issues
 // SELECTs against the connected user's own schema.
@@ -16,13 +16,9 @@ package dbview
 
 import (
 	"crypto/rand"
-	"embed"
 	"io/fs"
 	"net/http"
 )
-
-//go:embed all:public
-var publicFS embed.FS
 
 // Config configures an embedded dbview handler.
 type Config struct {
@@ -33,17 +29,18 @@ type Config struct {
 	Password string
 	// Secret signs the session cookie. Random per-process if empty.
 	Secret []byte
+	// UI serves the compiled frontend. Defaults to an empty filesystem when nil.
+	UI fs.FS
 }
 
 // New returns an http.Handler serving the dbview API + embedded UI. Mount it at
 // the root or under a subpath with http.StripPrefix.
 func New(cfg Config) http.Handler {
-	ui, _ := fs.Sub(publicFS, "public")
 	secret := cfg.Secret
 	if len(secret) == 0 {
 		secret = randomSecret()
 	}
-	return NewServer(cfg.DB, cfg.Password, secret, ui).Handler()
+	return NewServer(cfg.DB, cfg.Password, secret, cfg.UI).Handler()
 }
 
 func randomSecret() []byte {

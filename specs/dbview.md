@@ -4,9 +4,21 @@ Authoritative spec. Spec-driven: change this first, then code.
 
 ## Purpose
 
-Browse an Oracle schema (the same ADB jira uses) from a web page: see every
-table, every row, and render JSON columns with an expandable/collapsible JSON
-viewer. Embeddable as a separate page inside any project's layout/menu.
+Browse an Oracle schema (currently Score's Oracle ADB store) from a web page:
+see every table, every row, and render JSON columns with an
+expandable/collapsible JSON viewer. Embeddable as a separate page inside any
+project's layout/menu.
+
+## Project Shape
+
+The project is split into two deployable/buildable surfaces:
+
+- `api/`: Go read-only Oracle API and standalone server.
+- `ui/`: Vite/React database browser UI.
+
+The container build compiles the UI first, then ships the Go API binary with the
+compiled UI assets. Local development may run the UI separately through Vite or
+serve the built UI through the Go API with `DBVIEW_UI_DIR`.
 
 ## Non-goals (v1)
 
@@ -29,7 +41,9 @@ viewer. Embeddable as a separate page inside any project's layout/menu.
 
 `rows` response: `{table, columns, rows:[[Cell|null,…]], total, page, size, order, dir}`.
 A `Cell` is `{v:string, bin?:bool}`; a SQL `NULL` is JSON `null` (no Cell). `bin`
-marks elided binary (BLOB/RAW) content. Text cells are capped at 1 MiB.
+marks elided binary (BLOB/RAW) content. Binary columns return a length marker,
+not raw bytes. LOB text columns return a bounded preview so table browsing never
+loads whole large values.
 
 Paging is deterministic: default `ORDER BY ROWID`; clicking a (non-LOB) column
 header sorts by it (`order`+`dir`), validated against the table's columns.
@@ -45,9 +59,13 @@ header sorts by it (`order`+`dir`), validated against the table's columns.
 
 ## UI
 
+- Quiet operational UI matching Score-style application surfaces: compact
+  toolbar, left table navigation, dense data grid, restrained colors, and no
+  marketing/landing page.
 - **Left:** filterable table list (name + row count).
 - **Main:** selected table → sticky-header grid, page-size + prev/next pager,
-  per-column sort. Row number column. Click a row → detail dialog (all columns).
+  per-column sort. Row number column. Click a row → detail drawer/dialog (all
+  columns).
 - **JSON columns:** a cell whose text parses to an object/array shows a `{ }`/`[ ]`
   chip; clicking opens the **JSON viewer** — a collapsible tree where every
   object/array region toggles individually (▾/▸), plus **Expand all / Collapse
@@ -57,7 +75,13 @@ header sorts by it (`order`+`dir`), validated against the table's columns.
 ## Persistence / config
 
 Stateless. Connects via `ORA_USER`, `ORA_PASSWORD`, `ORA_CONNECT_DESCRIPTOR`,
-`ORA_WALLET` (pure-Go go-ora + wallet). In production these are the same secrets
-jira materializes (`/run/emibs/jira`), mounted read-only. `DBVIEW_PASSWORD` +
+`ORA_WALLET` (pure-Go go-ora + wallet). In production these are Score secrets
+materialized at `/run/emibs/score`, mounted read-only. `DBVIEW_PASSWORD` +
 `DBVIEW_COOKIE_SECRET` come from the container env (generated into
 `/engineering/local/dbview.env` by `deploy.sh`).
+
+## Score Link
+
+Score links to dbview as an embedded admin surface at `/dbview/?embed=1`. Score's
+UI nginx proxies `/dbview/` to the standalone dbview service on host
+`127.0.0.1:6210`; dbview remains independently deployable and read-only.

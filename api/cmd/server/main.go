@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	dbview "github.com/djufo/oci-db-json-view"
+	dbview "github.com/djufo/oci-db-json-view/api"
 )
 
 func main() {
@@ -35,6 +35,7 @@ func main() {
 		DB:       db,
 		Password: password,
 		Secret:   []byte(os.Getenv("DBVIEW_COOKIE_SECRET")),
+		UI:       os.DirFS(getenv("DBVIEW_UI_DIR", "ui/dist")),
 	})
 	addr := ":" + port
 	slog.Info("oci-db-json-view listening", "addr", addr, "authRequired", password != "")

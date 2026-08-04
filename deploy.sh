@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Deploy dbview. It reuses jira's already-materialized Oracle secrets (same ADB),
-# so jira must have been deployed at least once (HOST_SECRETS_DIR populated).
+# Deploy dbview. It reuses Score's already-materialized Oracle secrets, so Score
+# must have materialized /run/emibs/score at least once.
 # A persistent access password + cookie secret are generated once into
 # /engineering/local/dbview.env (gitignored) and reused on every deploy.
 set -euo pipefail
@@ -18,8 +18,8 @@ if [ ! -f "$SECRETS_STORE" ]; then
 fi
 set -a; . "$SECRETS_STORE"; set +a
 
-HOST_SECRETS_DIR="${HOST_SECRETS_DIR:-/run/emibs/jira}"
-[ -f "$HOST_SECRETS_DIR/app.env" ] || { echo "ERROR: $HOST_SECRETS_DIR/app.env not found — deploy jira first (it materializes the ADB creds dbview reuses)." >&2; exit 1; }
+HOST_SECRETS_DIR="${HOST_SECRETS_DIR:-/run/emibs/score}"
+[ -f "$HOST_SECRETS_DIR/app.env" ] || { echo "ERROR: $HOST_SECRETS_DIR/app.env not found — materialize Score runtime secrets first." >&2; exit 1; }
 
 HOST_SECRETS_DIR="$HOST_SECRETS_DIR" docker compose -f docker-compose.app.yml up -d --build
 echo "dbview up on 127.0.0.1:6210. Access password is in $SECRETS_STORE"
