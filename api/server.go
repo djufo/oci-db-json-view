@@ -169,8 +169,8 @@ func (s *Server) dbErr(w http.ResponseWriter, err error) {
 func withSecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		// Embeddable in other ocidev pages via iframe (same-site tooling).
-		w.Header().Set("Content-Security-Policy", "frame-ancestors 'self' https://*.ocidev.ayc.io")
+		// Embeddable in other development pages via iframe (same-site tooling).
+		w.Header().Set("Content-Security-Policy", "frame-ancestors 'self' https://*.dev.elitua.ayc.io")
 		next.ServeHTTP(w, r)
 	})
 }

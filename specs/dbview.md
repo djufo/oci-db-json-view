@@ -55,7 +55,7 @@ header sorts by it (`order`+`dir`), validated against the table's columns.
   bound. Scope is `user_*` (own schema).
 - `DBVIEW_PASSWORD` → shared-password login → HMAC(`DBVIEW_COOKIE_SECRET`) cookie.
   Empty password ⇒ open (dev). `X-Content-Type-Options: nosniff` +
-  `Content-Security-Policy: frame-ancestors 'self' https://*.ocidev.ayc.io`.
+  `Content-Security-Policy: frame-ancestors 'self' https://*.dev.elitua.ayc.io`.
 
 ## UI
 
