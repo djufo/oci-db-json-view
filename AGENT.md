@@ -1,6 +1,6 @@
 # AGENT.md — dbview (Oracle database browser)
 
-> **Global rules live in [`/engineering/AGENT.md`](../../AGENT.md)** (git/branching,
+> **Global rules live in [`/engineering/AGENT.md`](/engineering/AGENT.md)** (git/branching,
 > spec-driven, OCI/secret policy). This file is **dbview-specific** only.
 > Spec-driven: read [`specs/dbview.md`](specs/dbview.md) before changing behavior.
 
@@ -56,12 +56,7 @@ Add a menu item that points at dbview as a separate page — either link to
 `<iframe src="/dbview/?embed=1&table=APP_STATE"></iframe>`
 (`?embed=1` hides dbview's own topbar; `?table=NAME` preselects a table.)
 
-## Recent changes
+## Current instruction sources
 
-- 2026-06-14: First version. Read-only Oracle browser: `/api/tables`,
-  `/api/tables/{name}/columns`, `/api/tables/{name}/rows` (paged, sortable);
-  embedded UI with table list, grid, row-detail, and a dependency-free
-  collapsible JSON viewer (expand/collapse per-node + all). Shared-password auth,
-  single static binary, iframe-embeddable. Reuses jira's ADB creds.
-- 2026-06-27: Split into `api/` and `ui/`, rewired deploy to Score's
-  `/run/emibs/score` Oracle secrets, and added Score iframe/proxy integration.
+- `specs/dbview.md` owns the current library, standalone server, API, rendering, and security contract.
+- This file owns only the project-wide safety and build rules above. Work status and delivery history belong in Score and Git.
