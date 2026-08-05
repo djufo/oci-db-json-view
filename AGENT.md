@@ -36,7 +36,7 @@ oci-db-json-view/
   into a statement. Values (offset/limit) are always bound.
 - **Scope = the connected user's own schema** (`user_tables`, not `all_tables`).
 - **Auth.** `DBVIEW_PASSWORD` gates the UI/API (shared-password → HMAC cookie).
-  Empty ⇒ open (dev only). `frame-ancestors` CSP limits embedding to `*.ocidev.ayc.io`.
+  Empty ⇒ open (dev only). `frame-ancestors` CSP limits embedding to `*.dev.elitua.ayc.io`.
 
 ## Build / run
 
@@ -52,7 +52,7 @@ Deploy (reuses Score's materialized ADB creds):
 ## Embedding into another project
 
 Add a menu item that points at dbview as a separate page — either link to
-`https://dbview.ocidev.ayc.io` or iframe/proxy it:
+`https://dbview.dev.elitua.ayc.io` or iframe/proxy it:
 `<iframe src="/dbview/?embed=1&table=APP_STATE"></iframe>`
 (`?embed=1` hides dbview's own topbar; `?table=NAME` preselects a table.)
 
