@@ -1,8 +1,10 @@
 # AGENT.md — dbview (Oracle database browser)
 
-> Read [`/engineering/AGENT.md`](/engineering/AGENT.md) first. Spec-driven:
-> [`specs/dbview.md`](specs/dbview.md) is authoritative for the library, server,
-> API, rendering and security contract — change it first, then the code.
+> Read [`/engineering/AGENT.md`](/engineering/AGENT.md) first — estate-wide rules live there. This file is dbview-specific only.
+>
+> Spec-driven: [`specs/dbview.md`](specs/dbview.md) is authoritative for the
+> library, server, API, rendering and security contract — change it first, then
+> the code.
 
 An **embeddable, read-only Oracle schema browser**: tables → columns → paginated
 rows, with a collapsible viewer for JSON columns. The **library is the primary
