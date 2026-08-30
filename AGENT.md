@@ -1,6 +1,6 @@
 # AGENT.md — dbview (Oracle database browser)
 
-> Read [`/engineering/AGENT.md`](/engineering/AGENT.md) first — estate-wide rules live there. This file is oci-db-json-view-specific only.
+> Read [`/engineering/AGENT.md`](/engineering/AGENT.md) first — estate-wide rules live there. This file is dbview-specific only.
 >
 > Spec-driven: [`specs/dbview.md`](specs/dbview.md) is authoritative for the
 > library, server, API, rendering and security contract — change it first, then
