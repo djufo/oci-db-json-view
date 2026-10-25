@@ -49,8 +49,8 @@ Against [`platform-naming-and-environments.md`](/engineering/specs/platform-nami
 
 - **Environments:** none. No environment is provisioned and no surface is routed
   — no container runs, nothing listens on `6210`, no Caddy entry, no DNS record,
-  no deploy job. `/engineering/local/dbview.env`, which `deploy.sh` expects to
-  read, does not exist on this host either.
+  no deploy job. `deploy.sh` keeps its access password and cookie secret in
+  `/engineering/local/-secrets/oci-db-json-view/app/dbview.env`.
 - **Surfaces:** `ui` + `api` from one handler; embedded as a library it has no hostname of its own.
 - **Reach / access:** internal, unrouted; token-gated (`DBVIEW_PASSWORD`)
   before any route is ever added.
