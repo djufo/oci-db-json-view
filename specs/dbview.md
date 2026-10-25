@@ -78,7 +78,8 @@ Stateless. Connects via `ORA_USER`, `ORA_PASSWORD`, `ORA_CONNECT_DESCRIPTOR`,
 `ORA_WALLET` (pure-Go go-ora + wallet). In production these are Score secrets
 materialized at `/run/emibs/score`, mounted read-only. `DBVIEW_PASSWORD` +
 `DBVIEW_COOKIE_SECRET` come from the container env (generated into
-`/engineering/local/dbview.env` by `deploy.sh`).
+`/engineering/local/-secrets/oci-db-json-view/app/dbview.env` by `deploy.sh`;
+override with `DBVIEW_SECRETS_STORE`).
 
 ## Score Link
 
