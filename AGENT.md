@@ -61,3 +61,14 @@ Against [`platform-naming-and-environments.md`](/engineering/specs/platform-nami
   `6200-6299` range in
   [`port-allocation.md`](/engineering/specs/patterns/port-allocation.md) — claim
   a real block before deploying.
+
+## Deferred work: an exception to review (owner 2026-10-30)
+
+This project is demo-grade. A review finding that is only a limit, a security weakness, a missing
+proof, a resilience gap or a compliance item, while the feature works, is not
+fixed. The engineer records it as one file under `docs/` per
+[`docs/deferred-work.md`](docs/deferred-work.md) (folder, name, duplicate
+check). That file counts as a pass for that finding, and the work moves on.
+Never deferred: broken function, wrong results, data loss, exposed secrets, or
+code execution on our servers. Ruling:
+`/engineering/refs/owner-rulings.md#concerns-not-fixes-20261030`.
