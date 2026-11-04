@@ -2,13 +2,14 @@
 # Deploy dbview. It reuses Score's already-materialized Oracle secrets, so Score
 # must have materialized /run/emibs/score at least once.
 # A persistent access password + cookie secret are generated once into
-# /engineering/local/dbview.env (gitignored) and reused on every deploy.
+# /engineering/local/-secrets/oci-db-json-view/app/dbview.env (host-local, never
+# tracked) and reused on every deploy. Override with DBVIEW_SECRETS_STORE.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; cd "$HERE"
 
-SECRETS_STORE="/engineering/local/dbview.env"
+SECRETS_STORE="${DBVIEW_SECRETS_STORE:-/engineering/local/-secrets/oci-db-json-view/app/dbview.env}"
 if [ ! -f "$SECRETS_STORE" ]; then
-  mkdir -p "$(dirname "$SECRETS_STORE")"
+  mkdir -p -m 700 "$(dirname "$SECRETS_STORE")"
   {
     echo "DBVIEW_PASSWORD=$(head -c 18 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 20)"
     echo "DBVIEW_COOKIE_SECRET=$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 40)"

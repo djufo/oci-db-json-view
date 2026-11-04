@@ -5,6 +5,10 @@ dbview-bin
 /ui/node_modules/
 /ui/dist/
 
+# Go dependency/build caches must remain outside the repository.
+.gocache/
+.gomodcache/
+
 # Python runtime/test artifacts
 __pycache__/
 *.py[cod]
