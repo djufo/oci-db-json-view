@@ -470,6 +470,8 @@ function DetailDialog({ detail, onClose }: { detail: Detail | null; onClose: () 
         </Button>
       }
       closeLabel="Close"
+      // Portal inside the theme scope, otherwise the dialog loses theme tokens (white in dark mode).
+      container={document.querySelector<HTMLElement>(".ui-theme-scope")}
       onClose={onClose}
       open
       size="xl"
@@ -477,7 +479,7 @@ function DetailDialog({ detail, onClose }: { detail: Detail | null; onClose: () 
     >
       {detail.kind === "row" ? <RowDetail detail={detail} /> : null}
       {detail.kind === "text" ? <PayloadBlock ariaLabel={detail.title} payload={detail.text} variant="plain" wrap /> : null}
-      {detail.kind === "json" ? <JSONTree value={detail.value} /> : null}
+      {detail.kind === "json" ? <JSONViewer value={detail.value} /> : null}
     </Dialog>
   );
 }
@@ -495,7 +497,7 @@ function RowDetail({ detail }: { detail: Extract<Detail, { kind: "row" }> }) {
               {cell === null ? (
                 <span className="null">null</span>
               ) : json !== undefined ? (
-                <JSONTree value={json} />
+                <JSONViewer value={json} />
               ) : (
                 <PayloadBlock ariaLabel={column.name} density="compact" payload={cell.v} variant="plain" wrap />
               )}
@@ -507,36 +509,69 @@ function RowDetail({ detail }: { detail: Extract<Detail, { kind: "row" }> }) {
   );
 }
 
+// Expand all / Collapse all (specs/dbview.md): a bumped generation tells every node to take `open`.
+const TreeControl = React.createContext<{ gen: number; open: boolean }>({ gen: 0, open: true });
+
+function JSONViewer({ value }: { value: unknown }) {
+  const [control, setControl] = useState({ gen: 0, open: true });
+  const isContainer = value !== null && typeof value === "object";
+  return (
+    <TreeControl.Provider value={control}>
+      {isContainer ? (
+        <div className="json-actions">
+          <Button onClick={() => setControl((c) => ({ gen: c.gen + 1, open: true }))} size="sm" type="button" variant="ghost">
+            Expand all
+          </Button>
+          <Button onClick={() => setControl((c) => ({ gen: c.gen + 1, open: false }))} size="sm" type="button" variant="ghost">
+            Collapse all
+          </Button>
+        </div>
+      ) : null}
+      <JSONTree value={value} />
+    </TreeControl.Provider>
+  );
+}
+
+function JSONNode({ summary, children }: { summary: string; children: React.ReactNode }) {
+  const control = React.useContext(TreeControl);
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    if (control.gen > 0) {
+      setOpen(control.open);
+    }
+  }, [control]);
+  return (
+    <details className="json-node" onToggle={(event) => setOpen(event.currentTarget.open)} open={open}>
+      <summary>{summary}</summary>
+      <div>{children}</div>
+    </details>
+  );
+}
+
 function JSONTree({ value }: { value: unknown }) {
   if (Array.isArray(value)) {
     return (
-      <details className="json-node" open>
-        <summary>Array [{value.length}]</summary>
-        <div>
-          {value.map((item, index) => (
-            <div className="json-row" key={index}>
-              <span className="json-key">{index}</span>
-              <JSONTree value={item} />
-            </div>
-          ))}
-        </div>
-      </details>
+      <JSONNode summary={`Array [${value.length}]`}>
+        {value.map((item, index) => (
+          <div className="json-row" key={index}>
+            <span className="json-key">{index}</span>
+            <JSONTree value={item} />
+          </div>
+        ))}
+      </JSONNode>
     );
   }
   if (value && typeof value === "object") {
     const entries = Object.entries(value as Record<string, unknown>);
     return (
-      <details className="json-node" open>
-        <summary>Object {"{" + entries.length + "}"}</summary>
-        <div>
-          {entries.map(([key, item]) => (
-            <div className="json-row" key={key}>
-              <span className="json-key">{key}</span>
-              <JSONTree value={item} />
-            </div>
-          ))}
-        </div>
-      </details>
+      <JSONNode summary={`Object {${entries.length}}`}>
+        {entries.map(([key, item]) => (
+          <div className="json-row" key={key}>
+            <span className="json-key">{key}</span>
+            <JSONTree value={item} />
+          </div>
+        ))}
+      </JSONNode>
     );
   }
   return <span className={`json-scalar ${value === null ? "json-null" : ""}`}>{JSON.stringify(value)}</span>;
