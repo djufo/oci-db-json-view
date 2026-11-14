@@ -14,7 +14,7 @@ project's layout/menu.
 The project is split into two deployable/buildable surfaces:
 
 - `api/`: Go read-only Oracle API and standalone server.
-- `ui/`: Vite/React database browser UI.
+- `ui/`: Vite/React 19 database browser UI on the shared `emibs-ui-lib` 0.8.0 house style (AppFrame, PageScaffold; tarball in `ui/vendor/`).
 
 The container build compiles the UI first, then ships the Go API binary with the
 compiled UI assets. Local development may run the UI separately through Vite or
