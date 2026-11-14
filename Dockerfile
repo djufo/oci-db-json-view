@@ -1,7 +1,9 @@
 FROM node:20-alpine AS ui-builder
 WORKDIR /app
-COPY ui/package.json ui/package-lock.json* ./ui/
 WORKDIR /app/ui
+COPY ui/package.json ui/package-lock.json ./
+# file:vendor/emibs-ui-lib-*.tgz must exist before npm ci
+COPY ui/vendor ./vendor
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY ui ./
 RUN npm run build
