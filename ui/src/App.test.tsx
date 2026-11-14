@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
@@ -56,5 +56,36 @@ describe("dbview App", () => {
     );
     render(<App />);
     expect(await screen.findByLabelText("Access password")).toBeInTheDocument();
+  });
+
+  it("keeps Enter and Space on a JSON chip from opening the row details", async () => {
+    render(<App />);
+    const grid = await screen.findByRole("table", { name: "ORDERS rows" });
+    const chip = await within(grid).findByText(/\{ \}/);
+    fireEvent.keyDown(chip.closest("button") as HTMLElement, { key: "Enter" });
+    fireEvent.keyDown(chip.closest("button") as HTMLElement, { key: " " });
+    expect(screen.queryByText(/ORDERS row 1/)).toBeNull();
+  });
+
+  it("clears the typed password after signing out", async () => {
+    let authed = false;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string, init?: RequestInit) => {
+        if (url.endsWith("/api/login")) { authed = true; return json({}); }
+        if (url.endsWith("/api/logout")) { authed = false; return json({}); }
+        if (url.endsWith("/api/me")) return json({ authed, authRequired: true, readOnly: true });
+        if (url.endsWith("/api/tables")) return json([]);
+        void init;
+        return json({ error: "not found" }, 404);
+      })
+    );
+    render(<App />);
+    const field = await screen.findByLabelText("Access password");
+    fireEvent.change(field, { target: { value: "secret" } });
+    fireEvent.submit(field.closest("form") as HTMLFormElement);
+    const signOut = await screen.findByRole("button", { name: /sign out/i });
+    fireEvent.click(signOut);
+    expect(((await screen.findByLabelText("Access password")) as HTMLInputElement).value).toBe("");
   });
 });

@@ -147,6 +147,7 @@ function Viewer() {
     try {
       await api("/login", { method: "POST", body: JSON.stringify({ password }) });
       setLoginError("");
+      setPassword("");
       setMe(await api<Me>("/me"));
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : "Sign in failed");
@@ -155,6 +156,7 @@ function Viewer() {
 
   async function logout() {
     await api("/logout", { method: "POST" });
+    setPassword("");
     setMe(await api<Me>("/me"));
   }
 
@@ -415,6 +417,12 @@ function TableView({
   );
 }
 
+// The row handler in TablePrimitive activates on bubbled Enter/Space; a button
+// inside a cell must keep those keys for itself.
+function keepKeys(event: React.KeyboardEvent) {
+  if (event.key === "Enter" || event.key === " ") event.stopPropagation();
+}
+
 function CellView({ cell, column, onDetail }: { cell: Cell; column: Column; onDetail: (detail: Detail) => void }) {
   if (cell === null) {
     return <span className="null">null</span>;
@@ -427,6 +435,7 @@ function CellView({ cell, column, onDetail }: { cell: Cell; column: Column; onDe
     return (
       <button
         className="json-chip"
+        onKeyDown={keepKeys}
         onClick={(event) => {
           event.stopPropagation();
           onDetail({ kind: "json", title: column.name, value: json });
@@ -443,6 +452,7 @@ function CellView({ cell, column, onDetail }: { cell: Cell; column: Column; onDe
         <span className="cell clipped">{cell.v.slice(0, 220)}...</span>
         <button
           className="link-button"
+          onKeyDown={keepKeys}
           onClick={(event) => {
             event.stopPropagation();
             onDetail({ kind: "text", title: column.name, text: cell.v });
