@@ -1,10 +1,11 @@
+import {framePolicyPlugin} from './security/frame-vite';
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   // Relative base: the UI is mounted at the root or under any sub-path by the host (specs/dbview.md).
   base: "./",
-  plugins: [react()],
+  plugins: [framePolicyPlugin(), react()],
   server: {
     port: 6211,
     proxy: {

@@ -70,3 +70,14 @@ func TestHeadersAndRuntimeConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestMuxGeneratedHTMLRedirectHasFramePolicy(t *testing.T) {
+	p, _ := Parse("https://host.example|embed", "")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) })
+	w := httptest.NewRecorder()
+	p.Wrap(mux).ServeHTTP(w, httptest.NewRequest("GET", "/a//b", nil))
+	if (w.Code < 300 || w.Code >= 400) || !strings.Contains(w.Header().Get("Content-Type"), "text/html") || w.Header().Get("Content-Security-Policy") != "frame-ancestors 'self' https://host.example" {
+		t.Fatal(w.Code, w.Header())
+	}
+}
