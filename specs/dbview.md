@@ -55,7 +55,7 @@ header sorts by it (`order`+`dir`), validated against the table's columns.
   bound. Scope is `user_*` (own schema).
 - `DBVIEW_PASSWORD` → shared-password login → HMAC(`DBVIEW_COOKIE_SECRET`) cookie.
   Empty password ⇒ open (dev). `X-Content-Type-Options: nosniff` +
-  `Content-Security-Policy: frame-ancestors 'self' https://*.dev.elitua.ayc.io`.
+  default-deny framing (see Browser frame admission below).
 
 ## UI
 
@@ -86,3 +86,10 @@ override with `DBVIEW_SECRETS_STORE`).
 Score links to dbview as an embedded admin surface at `/dbview/?embed=1`. Score's
 UI nginx proxies `/dbview/` to the standalone dbview service on host
 `127.0.0.1:6210`; dbview remains independently deployable and read-only.
+
+## Browser frame admission
+
+The browser application denies framing unless runtime configuration explicitly
+permits both the parent origin and frame name. This check precedes app startup
+and data requests. The full environment and header contract is in
+[deployment documentation](../docs/deployment.md#frame-policy).

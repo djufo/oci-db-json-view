@@ -9,9 +9,14 @@ import (
 	"os"
 
 	dbview "github.com/djufo/oci-db-json-view/api"
+	"github.com/djufo/oci-db-json-view/internal/frameguard"
 )
 
 func main() {
+	if _, err := frameguard.FromEnv(); err != nil {
+		slog.Error("frame policy rejected", "error", err)
+		os.Exit(1)
+	}
 	port := getenv("PORT", "6210")
 
 	db, err := dbview.OpenDB(dbview.DBConfig{

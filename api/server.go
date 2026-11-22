@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/djufo/oci-db-json-view/internal/frameguard"
 	"io/fs"
 	"net/http"
 	"strconv"
@@ -32,6 +33,10 @@ func NewServer(db *DB, password string, secret []byte, ui fs.FS) *Server {
 }
 
 func (s *Server) Handler() http.Handler {
+	policy, err := frameguard.FromEnv()
+	if err != nil {
+		panic(err)
+	} // Invalid security configuration must refuse startup, including library mounts.
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", s.health)
 	mux.HandleFunc("GET /api/me", s.me)
@@ -42,7 +47,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/tables/{name}/rows", s.requireAuth(s.rows))
 	// Everything else is the UI app; unknown paths fall back to index.html.
 	mux.Handle("/", spaFileServer{s.ui})
-	return withSecurityHeaders(mux)
+	return policy.Wrap(withSecurityHeaders(mux))
 }
 
 // --- auth (shared-password -> signed cookie) --------------------------------
@@ -169,8 +174,6 @@ func (s *Server) dbErr(w http.ResponseWriter, err error) {
 func withSecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		// Embeddable in other development pages via iframe (same-site tooling).
-		w.Header().Set("Content-Security-Policy", "frame-ancestors 'self' https://*.dev.elitua.ayc.io")
 		next.ServeHTTP(w, r)
 	})
 }

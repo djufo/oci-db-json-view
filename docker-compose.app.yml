@@ -6,6 +6,8 @@ services:
       context: .
     container_name: oci-db-json-view
     environment:
+      FRAME_ALLOWED_ANCESTORS: ${FRAME_ALLOWED_ANCESTORS:-}
+      FRAME_ALLOWED_INSECURE_HOSTS: ${FRAME_ALLOWED_INSECURE_HOSTS:-}
       PORT: 6210
       SECRETS_DIR: /secrets
       DBVIEW_UI_DIR: /ui

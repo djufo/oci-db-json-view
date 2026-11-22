@@ -31,10 +31,8 @@ offset/limit always bound); **own-schema scope** (`user_tables`, never
 Two security facts that must stay visible. `DBVIEW_PASSWORD` gates the UI/API
 (shared password → HMAC cookie) and **empty is fail-open** — `api/server.go:51`
 authorises every request when it is unset, so anything reachable beyond loopback
-must set it. `api/server.go:173` sends `Content-Security-Policy: frame-ancestors
-'self' https://*.dev.elitua.ayc.io`; that is real in code but currently permits
-nothing, because no dbview host exists in that zone — re-derive it from the
-actual embedding host before relying on it.
+must set it. Framing denies by default; the runtime exception contract lives in
+[`docs/deployment.md`](docs/deployment.md#frame-policy).
 
 ## Build
 
