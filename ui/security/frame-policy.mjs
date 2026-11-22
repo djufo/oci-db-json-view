@@ -26,6 +26,10 @@ export function parseFramePolicy(env = process.env) {
 }
 export function frameCSP(entries, existing = "") {
   const directives=existing.split(";").map(part=>part.trim()).filter(part=>part && part.split(/\s/)[0].toLowerCase()!=="frame-ancestors");
-  const ancestors="frame-ancestors 'self'" + [...new Set(entries.map(entry => entry.origin))].map(origin => ' '+origin).join('');
+  const denyAll = !entries.length && existing.split(';').some(part => {
+    const fields = part.trim().split(/\s+/);
+    return fields[0].toLowerCase() === 'frame-ancestors' && fields.length === 2 && fields[1] === "'none'";
+  });
+  const ancestors=denyAll ? "frame-ancestors 'none'" : "frame-ancestors 'self'" + [...new Set(entries.map(entry => entry.origin))].map(origin => ' '+origin).join('');
   return [...directives,ancestors].join("; ");
 }

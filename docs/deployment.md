@@ -9,11 +9,12 @@ Both parts are required. Window names start with a letter or digit and contain
 trailing slash), credentials, query strings and fragments refuse startup.
 HTTP origins require their hostname explicitly in `FRAME_ALLOWED_INSECURE_HOSTS`
 (comma-separated hostnames, empty by default). Localhost has no special status.
-An empty allowlist sends CSP `frame-ancestors 'self'` and X-Frame-Options `DENY`.
+An empty allowlist sends CSP `frame-ancestors 'self'` and X-Frame-Options `DENY`,
+preserving a route's explicit `frame-ancestors 'none'`.
 Configured origins replace only the CSP ancestor directive; other CSP directives
 are preserved, and conflicting X-Frame-Options is omitted for exceptions.
 
-Client admission runs before the application loads: top-level windows pass;
+Client admission runs before the application loads: top-level windows start immediately without fetching frame configuration;
 a frame needs both an exact direct-parent origin and its matching window name.
 The host sets the iframe `name` attribute. Ancestor information comes from
 `location.ancestorOrigins[0]`, falling back to the referrer's origin only when

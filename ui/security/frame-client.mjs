@@ -13,11 +13,13 @@ export function frameError(doc = globalThis.document) {
   doc.documentElement.innerHTML = '<head><title>Unsupported frame</title></head><body><main><h1>This app is not supported inside a frame</h1></main></body>';
 }
 export async function startApp(load, configURL = '/frame-config.json') {
+  if (globalThis.window.self === globalThis.window.top) return load({frameAllowedAncestors: []});
+  let config;
   try {
     const response = await fetch(configURL, {cache:'no-store', credentials:'same-origin'});
     if (!response.ok) throw new Error('Frame configuration unavailable');
-    const config = await response.json();
+    config = await response.json();
     if (!frameAllowed(globalThis.window, config.frameAllowedAncestors)) { frameError(); return; }
   } catch { frameError(); return; }
-  await load();
+  await load(config);
 }

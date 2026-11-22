@@ -81,3 +81,19 @@ func TestMuxGeneratedHTMLRedirectHasFramePolicy(t *testing.T) {
 		t.Fatal(w.Code, w.Header())
 	}
 }
+
+func TestEmptyPolicyPreservesRouteDenial(t *testing.T) {
+	for _, existing := range []string{"frame-ancestors 'none'", "FRAME-ANCESTORS   'none'"} {
+		got := (Policy{}).CSP("default-src 'none'; " + existing + "; sandbox")
+		if got != "default-src 'none'; sandbox; frame-ancestors 'none'" {
+			t.Fatal(got)
+		}
+	}
+	if got := (Policy{}).CSP(""); got != "frame-ancestors 'self'" {
+		t.Fatal(got)
+	}
+	p, _ := Parse("https://host.example|embed", "")
+	if got := p.CSP("frame-ancestors 'none'"); got != "frame-ancestors 'self' https://host.example" {
+		t.Fatal(got)
+	}
+}

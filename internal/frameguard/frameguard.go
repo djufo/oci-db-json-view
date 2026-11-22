@@ -2,6 +2,7 @@
 package frameguard
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"net"
@@ -87,14 +88,21 @@ func Parse(raw, insecureRaw string) (Policy, error) {
 }
 func (p Policy) CSP(existing string) string {
 	directives := []string{}
+	denyAll := false
 	for _, part := range strings.Split(existing, ";") {
 		part = strings.TrimSpace(part)
 		fields := strings.Fields(part)
+		if len(p) == 0 && len(fields) == 2 && strings.EqualFold(fields[0], "frame-ancestors") && fields[1] == "'none'" {
+			denyAll = true
+		}
 		if len(fields) > 0 && !strings.EqualFold(fields[0], "frame-ancestors") {
 			directives = append(directives, part)
 		}
 	}
 	ancestors := "frame-ancestors 'self'"
+	if denyAll {
+		ancestors = "frame-ancestors 'none'"
+	}
 	seen := map[string]bool{}
 	for _, entry := range p {
 		if !seen[entry.Origin] {
@@ -167,4 +175,8 @@ func (w *policyWriter) Flush() {
 		w.WriteHeader(http.StatusOK)
 	}
 	_ = http.NewResponseController(w.ResponseWriter).Flush()
+}
+
+func (w *policyWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return http.NewResponseController(w.ResponseWriter).Hijack()
 }

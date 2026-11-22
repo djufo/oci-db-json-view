@@ -24,3 +24,10 @@ for (const [name,win,want] of [
  ['ancestor takes precedence',framed('https://other.example','embed','https://host.example/'),false],
  ['opaque origin',framed('null'),false], ['malformed referrer',framed(null,'embed','broken'),false],
 ]) test('client '+name, () => assert.equal(frameAllowed(win,entries),want));
+
+import {frameCSP} from './frame-policy.mjs';
+test('empty allowlist preserves an explicit route denial', () => {
+  assert.equal(frameCSP([], "default-src 'none'; FRAME-ANCESTORS 'none'; sandbox"), "default-src 'none'; sandbox; frame-ancestors 'none'");
+  assert.equal(frameCSP([], "default-src 'none'"), "default-src 'none'; frame-ancestors 'self'");
+  assert.equal(frameCSP([{origin:'https://host.example',name:'embed'}], "frame-ancestors 'none'"), "frame-ancestors 'self' https://host.example");
+});
